@@ -16,9 +16,14 @@ const addMessageToDOM = () => {
 
 /**
  * Your mission:
- *
- * - Use `fromEvent` to create an observable that streams click events.
- * - Subscribe to that observable.
- * - Use `addMessageToDOM` to add a useless message to the DOM whenever the
- *   stream emits a value.
- */
+*
+* - Use `fromEvent` to create an observable that streams click events.
+* - Subscribe to that observable.
+* - Use `addMessageToDOM` to add a useless message to the DOM whenever the
+*   stream emits a value.
+*/
+
+const click$ = fromEvent(button, 'click')
+
+click$.subscribe(addMessageToDOM);
+click$.subscribe(console.log);
