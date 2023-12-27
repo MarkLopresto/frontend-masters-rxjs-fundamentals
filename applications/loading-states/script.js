@@ -10,3 +10,26 @@ import {
   form,
   fetchData,
 } from './utilities';
+
+const loading$ = fromEvent(form, 'submit').pipe(
+  exhaustMap(() => {
+    const data$ = fetchData().pipe(shareReplay(1));
+
+    const showLoading$ = of(true).pipe(
+      delay(+showLoadingAfterField.value),
+      tap(() => showLoading(true)),
+    );
+
+    const timeToHideLoading$ = timer(+showLoadingForAtLeastField.value).pipe(
+      first(),
+    );
+
+    const shouldShowLoading$ = concat(showLoading$, timeToHideLoading$, data$.pipe(
+      tap(() => showLoading(false)),
+    ));
+
+    return race(data$, shouldShowLoading$)
+  }),
+ );
+
+loading$.subscribe();
