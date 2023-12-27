@@ -22,3 +22,40 @@ import {
 } from './utilities';
 
 const endpoint = 'http://localhost:3333/api/facts';
+
+const fetchData = () =>
+  fromFetch(endpoint).pipe(
+    mergeMap((response) => {
+      if (response.ok) {
+        return response.json();
+      } else {
+        throw new Error('Something went wrong!');
+      }
+    }),
+    retry(4),
+    catchError((error) => {
+      console.error(error);
+      return of({ error: 'The stream caught an error. Cool, right?' });
+    }),
+  );
+
+const fetch$ = fromEvent(fetchButton, 'click').pipe(
+  mapTo(true),
+);
+const stop$ = fromEvent(stopButton, 'click').pipe(
+  mapTo(false),
+);
+const factStream$ = merge(fetch$, stop$).pipe(
+  startWith(false),
+  switchMap((shouldFetch) => {
+    return shouldFetch
+      ? timer(0, 5000).pipe(
+        tap(() => clearError()),
+        tap(() => clearFacts()),
+          exhaustMap(fetchData),
+        )
+      : NEVER;
+  }),
+);
+
+factStream$.subscribe(addFacts);
